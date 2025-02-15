@@ -3,21 +3,20 @@
 /**
  * main - Entry point
  *
- * Description: Prints the alphabet in lowercase, excluding q and e.
+ * Description: Prints all single-digit numbers of base 10 starting from 0.
  *
  * Return: Always 0 (Success)
  */
 int main(void)
 {
-	char letter;
+    char digit;
 
-	for (letter = 'a'; letter <= 'z'; letter++)
-	{
-		if (letter != 'e' && letter != 'q')
-			putchar(letter);
-	}
+    for (digit = '0'; digit <= '9'; digit++)
+    {
+        putchar(digit);
+    }
 
-	putchar('\n');
+    putchar('\n');
 
-	return (0);
+    return (0);
 }
