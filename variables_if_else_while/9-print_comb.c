@@ -10,20 +10,20 @@
  */
 int main(void)
 {
-    int n;
+	int n;
 
-    for (n = 0; n < 10; n++)
-    {
-        putchar(n + '0');  /* Print the current number */
+	for (n = 0; n < 10; n++)
+	{
+		putchar(n + '0');  /* Print the current number */
 
-        if (n != 9)  /* For numbers 0-8, print the separator */
-        {
-            putchar(',');  /* Print comma */
-            putchar(' ');  /* Print space */
-        }
-    }
+		if (n != 9)  /* For numbers 0-8, print the separator */
+		{
+			putchar(',');  /* Print comma */
+			putchar(' ');  /* Print space */
+		}
+	}
 
-    putchar('\n');  /* Print the newline at the end */
+	putchar('\n');  /* Print the newline at the end */
 
-    return (0);
+	return (0);
 }
