@@ -1,6 +1,10 @@
 #include "main.h"
 
-
+/**
+* print_diagonal - draw diagonal line
+*
+* @n: number of time \ character is printed
+*/
 
 void print_diagonal(int n)
 {
