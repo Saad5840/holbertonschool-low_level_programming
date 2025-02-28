@@ -1,0 +1,39 @@
+#include "main.h"
+
+/**
+ * cap_string - Capitalizes all words of a string
+ * @str: The string to modify
+ *
+ * Return: Pointer to the modified string
+ */
+char *cap_string(char *str)
+{
+    int i = 0;
+    int capitalize = 1; // Flag to capitalize the next letter
+
+    char separators[] = " \t\n,;.!?\"(){}"; // Word separators
+
+    while (str[i] != '\0')
+    {
+        if (capitalize && str[i] >= 'a' && str[i] <= 'z')
+        {
+            str[i] -= 32; // Convert lowercase to uppercase
+        }
+
+        capitalize = 0; // Reset flag
+
+        // Check if current character is a separator
+        for (int j = 0; separators[j] != '\0'; j++)
+        {
+            if (str[i] == separators[j])
+            {
+                capitalize = 1; // Next character should be capitalized
+                break;
+            }
+        }
+
+        i++;
+    }
+
+    return (str);
+}
