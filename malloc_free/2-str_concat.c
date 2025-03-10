@@ -33,6 +33,9 @@ while (s2[len2] != '\0')
 
 concat = (char *)malloc((len1 + len2 + 1) * sizeof(char));
 
+if (concat == NULL)
+	return (NULL);
+
 for (i = 0; i < len1; i++)
 {
 	concat[i] = s1[i];
