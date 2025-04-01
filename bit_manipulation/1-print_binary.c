@@ -7,7 +7,7 @@
 void print_binary(unsigned long int n)
 {
 	int started = 0;
-	unsigned long int mask = 1UL << (sizeof(n) * 8 - 1); /* start at highest bit */
+	unsigned long int mask = 1UL << (sizeof(n) * 8 - 1);
 
 	if (n == 0)
 	{
