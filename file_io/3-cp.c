@@ -32,51 +32,21 @@ void close_fd(int fd)
 }
 
 /**
- * initial_copy - Reads an initial block from the source file and writes it
- *                to the destination file.
+ * copy_file - Copies the content from the source file descriptor to the
+ * destination file descriptor.
  * @fd_from: Source file descriptor.
  * @fd_to: Destination file descriptor.
  * @file_from: Name of the source file.
  * @file_to: Name of the destination file.
  */
-void initial_copy(int fd_from, int fd_to, char *file_from, char *file_to)
+void copy_file(int fd_from, int fd_to, char *file_from, char *file_to)
 {
 	ssize_t r, w;
-	char buf[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE];
 
-	r = read(fd_from, buf, BUFFER_SIZE);
-	if (r == -1)
+	while ((r = read(fd_from, buffer, BUFFER_SIZE)) > 0)
 	{
-		close_fd(fd_from);
-		error_exit(98, "Error: Can't read from file", file_from);
-	}
-	if (r > 0)
-	{
-		w = write(fd_to, buf, r);
-		if (w == -1 || w != r)
-		{
-			close_fd(fd_from);
-			close_fd(fd_to);
-			error_exit(99, "Error: Can't write to", file_to);
-		}
-	}
-}
-
-/**
- * copy_loop - Continues copying data from the source file to the destination.
- * @fd_from: Source file descriptor.
- * @fd_to: Destination file descriptor.
- * @file_from: Name of the source file.
- * @file_to: Name of the destination file.
- */
-void copy_loop(int fd_from, int fd_to, char *file_from, char *file_to)
-{
-	ssize_t r, w;
-	char buf[BUFFER_SIZE];
-
-	while ((r = read(fd_from, buf, BUFFER_SIZE)) > 0)
-	{
-		w = write(fd_to, buf, r);
+		w = write(fd_to, buffer, r);
 		if (w == -1 || w != r)
 		{
 			close_fd(fd_from);
@@ -108,18 +78,22 @@ int main(int ac, char **av)
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
 		exit(97);
 	}
+
 	fd_from = open(av[1], O_RDONLY);
 	if (fd_from == -1)
 		error_exit(98, "Error: Can't read from file", av[1]);
+
 	fd_to = open(av[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
 		close_fd(fd_from);
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
-	initial_copy(fd_from, fd_to, av[1], av[2]);
-	copy_loop(fd_from, fd_to, av[1], av[2]);
+
+	copy_file(fd_from, fd_to, av[1], av[2]);
+
 	close_fd(fd_from);
 	close_fd(fd_to);
+
 	return (0);
 }
