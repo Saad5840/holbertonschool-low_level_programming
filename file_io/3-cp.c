@@ -7,10 +7,10 @@
 #define BUFFER_SIZE 1024
 
 /**
- * error_exit - Prints error message and exits with the given code.
- * @exit_code: exit status
- * @message: message to print
- * @filename: file involved in the error
+ * error_exit - Prints an error message to stderr and exits.
+ * @exit_code: exit code to return
+ * @message: message prefix to print
+ * @filename: the filename related to the error
  */
 void error_exit(int exit_code, const char *message, const char *filename)
 {
@@ -19,11 +19,11 @@ void error_exit(int exit_code, const char *message, const char *filename)
 }
 
 /**
- * main - Copies the content of a file to another file.
+ * main - copies the content of a file to another file
  * @ac: argument count
  * @av: argument vector
  *
- * Return: 0 on success, exits with code on failure
+ * Return: 0 on success, exits with specific codes on failure
  */
 int main(int ac, char **av)
 {
@@ -48,19 +48,23 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
-	while ((r = read(fd_from, buffer, BUFFER_SIZE)) > 0)
+	while ((r = read(fd_from, buffer, BUFFER_SIZE)) != 0)
 	{
+		if (r == -1)
+		{
+			close(fd_from);
+			close(fd_to);
+			error_exit(98, "Error: Can't read from file", av[1]);
+		}
+
 		w = write(fd_to, buffer, r);
-		if (w != r)
+		if (w == -1 || w != r)
 		{
 			close(fd_from);
 			close(fd_to);
 			error_exit(99, "Error: Can't write to", av[2]);
 		}
 	}
-
-	if (r == -1)
-		error_exit(98, "Error: Can't read from file", av[1]);
 
 	if (close(fd_from) == -1)
 	{
