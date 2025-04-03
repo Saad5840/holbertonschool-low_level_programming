@@ -8,9 +8,9 @@
 
 /**
  * error_exit - Prints an error message to stderr and exits.
- * @exit_code: exit code to return
- * @message: message prefix to print
- * @filename: the filename related to the error
+ * @exit_code: Exit code to use.
+ * @message: Message to print before the filename.
+ * @filename: Name of the file associated with the error.
  */
 void error_exit(int exit_code, const char *message, const char *filename)
 {
@@ -19,11 +19,11 @@ void error_exit(int exit_code, const char *message, const char *filename)
 }
 
 /**
- * main - copies the content of a file to another file
- * @ac: argument count
- * @av: argument vector
+ * main - Copies the contents of one file to another.
+ * @ac: Argument count.
+ * @av: Argument vector.
  *
- * Return: 0 on success, exits with specific codes on failure
+ * Return: 0 on success, or exits with the appropriate error code.
  */
 int main(int ac, char **av)
 {
@@ -48,15 +48,8 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
-	while ((r = read(fd_from, buffer, BUFFER_SIZE)) != 0)
+	while ((r = read(fd_from, buffer, BUFFER_SIZE)) > 0)
 	{
-		if (r == -1)
-		{
-			close(fd_from);
-			close(fd_to);
-			error_exit(98, "Error: Can't read from file", av[1]);
-		}
-
 		w = write(fd_to, buffer, r);
 		if (w == -1 || w != r)
 		{
@@ -64,6 +57,13 @@ int main(int ac, char **av)
 			close(fd_to);
 			error_exit(99, "Error: Can't write to", av[2]);
 		}
+	}
+
+	if (r == -1)
+	{
+		close(fd_from);
+		close(fd_to);
+		error_exit(98, "Error: Can't read from file", av[1]);
 	}
 
 	if (close(fd_from) == -1)
