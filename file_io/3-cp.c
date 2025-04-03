@@ -19,6 +19,27 @@ void error_exit(int exit_code, const char *msg, const char *filename)
 }
 
 /**
+ * initial_read - Reads the first BUFFER_SIZE bytes from fd_from.
+ * @fd_from: Source file descriptor.
+ * @buffer: Buffer to store data.
+ * @file_from: Name of the source file.
+ *
+ * Return: Number of bytes read.
+ */
+ssize_t initial_read(int fd_from, char *buffer, const char *file_from)
+{
+	ssize_t r;
+
+	r = read(fd_from, buffer, BUFFER_SIZE);
+	if (r == -1)
+	{
+		close(fd_from);
+		error_exit(98, "Error: Can't read from file", file_from);
+	}
+	return (r);
+}
+
+/**
  * copy_loop - Copies the remainder of the source file to the destination.
  * @fd_from: Source file descriptor.
  * @fd_to: Destination file descriptor.
@@ -67,23 +88,13 @@ int main(int ac, char **av)
 		exit(97);
 	}
 
-	/* Open the source file */
 	fd_from = open(av[1], O_RDONLY);
 	if (fd_from == -1)
 		error_exit(98, "Error: Can't read from file", av[1]);
 
-	/*
-	 * Perform an initial read to ensure we can read from the source.
-	 * If this read fails, we exit with code 98 before opening the destination.
-	 */
-	r = read(fd_from, buffer, BUFFER_SIZE);
-	if (r == -1)
-	{
-		close(fd_from);
-		error_exit(98, "Error: Can't read from file", av[1]);
-	}
+	/* Perform an initial read to test for read errors */
+	r = initial_read(fd_from, buffer, av[1]);
 
-	/* Open the destination file */
 	fd_to = open(av[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
@@ -91,7 +102,6 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
-	/* If any data was read in the initial call, write it first */
 	if (r > 0)
 	{
 		w = write(fd_to, buffer, r);
@@ -103,7 +113,6 @@ int main(int ac, char **av)
 		}
 	}
 
-	/* Continue copying the rest of the file */
 	copy_loop(fd_from, fd_to, av[1], av[2]);
 
 	if (close(fd_from) == -1)
