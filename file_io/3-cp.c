@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include "holberton.h"
+#include "main.h"
 
 
 #define READ_ERR "Error: Can't read from file %s\n"
