@@ -48,7 +48,9 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
-	while ((r = read(fd_from, buffer, BUFFER_SIZE)) > 0)
+	/* Try first read BEFORE the loop */
+	r = read(fd_from, buffer, BUFFER_SIZE);
+	while (r > 0)
 	{
 		w = write(fd_to, buffer, r);
 		if (w == -1 || w != r)
@@ -57,6 +59,7 @@ int main(int ac, char **av)
 			close(fd_to);
 			error_exit(99, "Error: Can't write to", av[2]);
 		}
+		r = read(fd_from, buffer, BUFFER_SIZE);
 	}
 
 	if (r == -1)
