@@ -43,6 +43,7 @@ void initial_copy(int fd_from, int fd_to, char *file_from, char *file_to)
 	ssize_t r, w;
 	char buffer[BUFFER_SIZE];
 
+	/* Read the initial block of data */
 	r = read(fd_from, buffer, BUFFER_SIZE);
 	if (r == -1)
 	{
@@ -50,6 +51,7 @@ void initial_copy(int fd_from, int fd_to, char *file_from, char *file_to)
 		error_exit(98, "Error: Can't read from file", file_from);
 	}
 
+	/* If data was read, write it to the destination */
 	if (r > 0)
 	{
 		w = write(fd_to, buffer, r);
@@ -104,16 +106,19 @@ int main(int ac, char **av)
 {
 	int fd_from, fd_to;
 
+	/* Validate arguments */
 	if (ac != 3)
 	{
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
 		exit(97);
 	}
 
+	/* Open the source file for reading */
 	fd_from = open(av[1], O_RDONLY);
 	if (fd_from == -1)
 		error_exit(98, "Error: Can't read from file", av[1]);
 
+	/* Open the destination file for writing */
 	fd_to = open(av[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
@@ -121,9 +126,13 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
+	/* Perform the initial read and write operation */
 	initial_copy(fd_from, fd_to, av[1], av[2]);
+
+	/* Copy the rest of the file */
 	copy_loop(fd_from, fd_to, av[1], av[2]);
 
+	/* Close the file descriptors */
 	close_fd(fd_from);
 	close_fd(fd_to);
 
