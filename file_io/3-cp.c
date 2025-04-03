@@ -54,6 +54,14 @@ int main(int ac, char **av)
 	if (fd_from == -1)
 		error_exit(98, "Error: Can't read from file", av[1]);
 
+	/* Perform an initial read to test for read errors */
+	r = read(fd_from, buffer, BUFFER_SIZE);
+	if (r == -1)
+	{
+		close_fd(fd_from);
+		error_exit(98, "Error: Can't read from file", av[1]);
+	}
+
 	fd_to = open(av[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
@@ -61,6 +69,19 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
+	/* If data was read initially, write it first */
+	if (r > 0)
+	{
+		w = write(fd_to, buffer, r);
+		if (w == -1 || w != r)
+		{
+			close_fd(fd_from);
+			close_fd(fd_to);
+			error_exit(99, "Error: Can't write to", av[2]);
+		}
+	}
+
+	/* Copy the rest of the file if data was read */
 	while ((r = read(fd_from, buffer, BUFFER_SIZE)) > 0)
 	{
 		w = write(fd_to, buffer, r);
@@ -71,6 +92,8 @@ int main(int ac, char **av)
 			error_exit(99, "Error: Can't write to", av[2]);
 		}
 	}
+
+	/* Check for any read error in the loop */
 	if (r == -1)
 	{
 		close_fd(fd_from);
@@ -80,5 +103,6 @@ int main(int ac, char **av)
 
 	close_fd(fd_from);
 	close_fd(fd_to);
+
 	return (0);
 }
