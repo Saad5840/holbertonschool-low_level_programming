@@ -19,45 +19,17 @@ void error_exit(int exit_code, const char *msg, const char *filename)
 }
 
 /**
- * copy_loop - Copies the content from one file descriptor to another.
- * @fd_from: File descriptor for the source file.
- * @fd_to: File descriptor for the destination file.
- * @file_from: Name of the source file.
- * @file_to: Name of the destination file.
- */
-void copy_loop(int fd_from, int fd_to, char *file_from, char *file_to)
-{
-	ssize_t r, w;
-	char buffer[BUFFER_SIZE];
-
-	while ((r = read(fd_from, buffer, BUFFER_SIZE)) != 0)
-	{
-		if (r == -1)
-		{
-			close(fd_from);
-			close(fd_to);
-			error_exit(98, "Error: Can't read from file", file_from);
-		}
-		w = write(fd_to, buffer, r);
-		if (w == -1 || w != r)
-		{
-			close(fd_from);
-			close(fd_to);
-			error_exit(99, "Error: Can't write to", file_to);
-		}
-	}
-}
-
-/**
  * main - Copies the content of a file to another file.
  * @ac: Argument count.
  * @av: Argument vector.
  *
- * Return: 0 on success, or exits with code 97, 98, 99, or 100 on error.
+ * Return: 0 on success, or exits with codes 97, 98, 99, or 100 on error.
  */
 int main(int ac, char **av)
 {
 	int fd_from, fd_to;
+	ssize_t r, w;
+	char buffer[BUFFER_SIZE];
 
 	if (ac != 3)
 	{
@@ -76,7 +48,22 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
-	copy_loop(fd_from, fd_to, av[1], av[2]);
+	while ((r = read(fd_from, buffer, BUFFER_SIZE)) > 0)
+	{
+		w = write(fd_to, buffer, r);
+		if (w == -1 || w != r)
+		{
+			close(fd_from);
+			close(fd_to);
+			error_exit(99, "Error: Can't write to", av[2]);
+		}
+	}
+	if (r == -1)
+	{
+		close(fd_from);
+		close(fd_to);
+		error_exit(98, "Error: Can't read from file", av[1]);
+	}
 
 	if (close(fd_from) == -1)
 	{
