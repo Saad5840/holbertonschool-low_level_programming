@@ -32,8 +32,21 @@ void close_fd(int fd)
 }
 
 /**
- * initial_read - Performs an initial read from the source file.
- * @fd_from: The source file descriptor.
+ * validate_args - Validates the number of arguments.
+ * @ac: The argument count.
+ */
+void validate_args(int ac)
+{
+	if (ac != 3)
+	{
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
+		exit(97);
+	}
+}
+
+/**
+ * initial_read - Reads up to BUFFER_SIZE bytes from the source file.
+ * @fd_from: Source file descriptor.
  * @buffer: Buffer to store data.
  * @file_from: Name of the source file.
  *
@@ -46,7 +59,7 @@ ssize_t initial_read(int fd_from, char *buffer, const char *file_from)
 	r = read(fd_from, buffer, BUFFER_SIZE);
 	if (r == -1)
 	{
-		close(fd_from);
+		close_fd(fd_from);
 		error_exit(98, "Error: Can't read from file", file_from);
 	}
 	return (r);
@@ -95,26 +108,17 @@ int main(int ac, char **av)
 	ssize_t r, w;
 	char buffer[BUFFER_SIZE];
 
-	if (ac != 3)
-	{
-		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(97);
-	}
-
+	validate_args(ac);
 	fd_from = open(av[1], O_RDONLY);
 	if (fd_from == -1)
 		error_exit(98, "Error: Can't read from file", av[1]);
-
-	/* Test reading the first block before opening the destination */
 	r = initial_read(fd_from, buffer, av[1]);
-
 	fd_to = open(av[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
 		close_fd(fd_from);
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
-
 	if (r > 0)
 	{
 		w = write(fd_to, buffer, r);
@@ -125,11 +129,8 @@ int main(int ac, char **av)
 			error_exit(99, "Error: Can't write to", av[2]);
 		}
 	}
-
 	copy_loop(fd_from, fd_to, av[1], av[2]);
-
 	close_fd(fd_from);
 	close_fd(fd_to);
-
 	return (0);
 }
