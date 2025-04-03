@@ -19,9 +19,9 @@ void error_exit(int exit_code, const char *msg, const char *filename)
 }
 
 /**
- * copy_loop - Copies the contents from one file descriptor to another.
- * @fd_from: File descriptor for the source file.
- * @fd_to: File descriptor for the destination file.
+ * copy_loop - Copies the remainder of the source file to the destination.
+ * @fd_from: Source file descriptor.
+ * @fd_to: Destination file descriptor.
  * @file_from: Name of the source file.
  * @file_to: Name of the destination file.
  */
@@ -49,7 +49,7 @@ void copy_loop(int fd_from, int fd_to, char *file_from, char *file_to)
 }
 
 /**
- * main - Copies the content of a file to another file.
+ * main - Copies the content of one file to another.
  * @ac: Argument count.
  * @av: Argument vector.
  *
@@ -58,6 +58,8 @@ void copy_loop(int fd_from, int fd_to, char *file_from, char *file_to)
 int main(int ac, char **av)
 {
 	int fd_from, fd_to;
+	ssize_t r, w;
+	char buffer[BUFFER_SIZE];
 
 	if (ac != 3)
 	{
@@ -65,10 +67,23 @@ int main(int ac, char **av)
 		exit(97);
 	}
 
+	/* Open the source file */
 	fd_from = open(av[1], O_RDONLY);
 	if (fd_from == -1)
 		error_exit(98, "Error: Can't read from file", av[1]);
 
+	/*
+	 * Perform an initial read to ensure we can read from the source.
+	 * If this read fails, we exit with code 98 before opening the destination.
+	 */
+	r = read(fd_from, buffer, BUFFER_SIZE);
+	if (r == -1)
+	{
+		close(fd_from);
+		error_exit(98, "Error: Can't read from file", av[1]);
+	}
+
+	/* Open the destination file */
 	fd_to = open(av[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_to == -1)
 	{
@@ -76,6 +91,19 @@ int main(int ac, char **av)
 		error_exit(99, "Error: Can't write to", av[2]);
 	}
 
+	/* If any data was read in the initial call, write it first */
+	if (r > 0)
+	{
+		w = write(fd_to, buffer, r);
+		if (w == -1 || w != r)
+		{
+			close(fd_from);
+			close(fd_to);
+			error_exit(99, "Error: Can't write to", av[2]);
+		}
+	}
+
+	/* Continue copying the rest of the file */
 	copy_loop(fd_from, fd_to, av[1], av[2]);
 
 	if (close(fd_from) == -1)
